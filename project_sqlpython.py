@@ -1,13 +1,13 @@
 import mysql.connector
 class EcommerceApp:
-    #constructor
+ 
     def __init__(self):
-        self.current_user = None  # (this function is for login)Stores: {'id': int, 'name': str, 'role': str} jo login hai usko store karega 
-                                  #starting me no login so current user is none 
+        self.current_user = None  
+                                 
     # ================= CLI MENUS =================
     def run(self):
-        while True:                   #menu will run again and again until user exit
-            if not self.current_user:                     #if user is not login
+        while True:                 
+            if not self.current_user:                  
                 print("\n===============================")
                 print("   E-COMMERCE SYSTEM (CLI)     ")
                 print("===============================")
@@ -15,6 +15,7 @@ class EcommerceApp:
                 print("2. Login")
                 print("3. Register")
                 print("4. Exit")
+                print("===============================")
                 choice = input("Select an option (1-4): ").strip()
 
                 if choice == '1':
@@ -23,9 +24,8 @@ class EcommerceApp:
                     self.login()
                 elif choice == '3':
                     self.register()
-            else:                                    #if user is login
-                
-                #print(f"current_user {self.current_user}")
+            else:                                
+    
                 print(f"\n--- Logged in as: {self.current_user['name']} [{self.current_user['role'].upper()}] ---")
                 print("1. Browse Catalog")
                 print("2. Add Item to Cart")
@@ -36,9 +36,9 @@ class EcommerceApp:
                 if self.current_user['role'] == 'admin':
                     print("6. [Admin] Add New Product")
                     print("7. [Admin] View All Customer Orders")
-                print("0. Logout")                  #ye customer,admin dono ke liye print hoga
+                print("0. Logout")              
 
-                choice = input("Select an option: ").strip()  #in choice we have taken string'1' thats why input datatype
+                choice = input("Select an option: ").strip()  
 
                 if choice == '1':
                     self.view_products()
@@ -59,11 +59,11 @@ class EcommerceApp:
          return conn
             
   # ================= CATALOG & CART =================
-    def view_products(self):       # Database open => SELECT*... => Data fetch => print product
+    def view_products(self):      
         print("\n" + "="*70)
         print(f"{'ID':<5}{'Product Name':<30}{'Category':<15}{'Price (INR)':<12}{'Stock':<8}")
         print("="*70)
-        #conn = mysql.connector.connect(host="localhost",user="root",password="root",database="cli_ecommerce_db")
+    
         conn=self.get_db()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM products ORDER BY id ASC")
@@ -83,24 +83,24 @@ class EcommerceApp:
         print("\n--- Register New User ---")
         name = input("Enter Full Name: ").strip()
         email = input("Enter Email: ").strip()
-        #pwd = getpass.getpass("Enter Password: ")
-        pwd=input("enter password")
+     
+        pwd=input("Enter Password:")
 
         if not name or not email or not pwd:
             print("[!] All fields are required.")
             return
 
-        conn = mysql.connector.connect(host="127.0.0.1", user="root",password="sa123",database="ecommerce_db")
+        conn=self.get_db()
 
         cursor = conn.cursor(dictionary=True)
-        try:                                                                   #first it will check email
+        try:                                                                
             cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             if cursor.fetchone():
                 print("[!] Email is already registered. Please login.")
                 return
 
-            #hashed = hash_password(pwd)
-            cursor.execute(                                                          #after email checking
+         
+            cursor.execute(                                                     
                 "INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)",
                 (name, email, 'abc')
             )
@@ -117,7 +117,7 @@ class EcommerceApp:
         email = input("Email: ").strip()
         pwd = input("enter password")
 
-        conn = mysql.connector.connect(host="127.0.0.1", user="root",password="sa123",database="ecommerce_db")
+        conn=self.get_db()
         cursor = conn.cursor(dictionary=True)
         try:
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -126,7 +126,7 @@ class EcommerceApp:
                 self.current_user = {
                     "id": user['id'],
                     "name": user['name'],
-                    "role": user['role']                #if the password is match it saves in current_user
+                    "role": user['role']             
                 }
                 print(f"\n[+] Welcome back, {user['name']}! (Role: {user['role']})")
             else:
@@ -138,7 +138,7 @@ class EcommerceApp:
     def add_to_cart(self):
         self.view_products()
         try:
-            prod_id = int(input("\nEnter Product ID to add: "))   #take pro_id and quantity from user
+            prod_id = int(input("\nEnter Product ID to add: ")) 
             qty = int(input("Enter Quantity: "))
             if qty <= 0:
                 print("[!] Quantity must be at least 1.")
@@ -147,8 +147,8 @@ class EcommerceApp:
             print("[!] Invalid input. Numbers only.")
             return
 
-        #conn = get_db()
-        conn = mysql.connector.connect(host="127.0.0.1", user="root",password="sa123",database="ecommerce_db")
+  
+        conn=self.get_db()
         cursor = conn.cursor(dictionary=True)
         try:
             cursor.execute("SELECT stock FROM products WHERE id = %s", (prod_id,))
@@ -171,9 +171,9 @@ class EcommerceApp:
             cursor.close()
             conn.close()
 #--------------------------------------------------------------------------------------------
-    def view_cart(self): #it needs cart_items(it containis only ids,quantity noname)so +product  to get name
-        #conn = get_db()
-        conn = mysql.connector.connect(host="127.0.0.1", user="root",password="sa123",database="ecommerce_db")
+    def view_cart(self):
+      
+        conn=self.get_db()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
             SELECT ci.product_id, p.name, p.price, ci.quantity, (p.price * ci.quantity) as subtotal
@@ -204,7 +204,7 @@ class EcommerceApp:
 
 #============================== ORDERS & CHECKOUT===============================================
     def checkout(self):
-        if not self.view_cart(): #checks the cart
+        if not self.view_cart():
             return
 
         confirm = input("\nProceed to checkout? (y/n): ").strip().lower() #if product is available
@@ -217,12 +217,12 @@ class EcommerceApp:
             print("[!] Delivery address cannot be empty.")
             return
 
-        #conn = get_db()
-        conn = mysql.connector.connect(host="127.0.0.1", user="root",password="sa123",database="ecommerce_db")
+ 
+        conn=self.get_db()
         cursor = conn.cursor(dictionary=True)
 
         try:
-            # Atomic Transaction: lock rows, verify stock, create order, deduct stock
+        
             conn.start_transaction()
 
             cursor.execute("""
@@ -246,14 +246,13 @@ class EcommerceApp:
                     return
                 total_amount += float(item['price']) * item['quantity']
 
-            # Insert master order
             cursor.execute(
                 "INSERT INTO orders (user_id, total_amount, delivery_address) VALUES (%s, %s, %s)",
                 (self.current_user['id'], total_amount, address)
             )
             order_id = cursor.lastrowid
 
-            # Insert line items and update inventory
+          
             for item in items:
                 cursor.execute(
                     "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (%s, %s, %s, %s)",
@@ -264,7 +263,7 @@ class EcommerceApp:
                     (item['quantity'], item['product_id'])
                 )
 
-            # Clear cart
+      
             cursor.execute("DELETE FROM cart_items WHERE user_id = %s", (self.current_user['id'],))
 
             conn.commit()
@@ -278,8 +277,8 @@ class EcommerceApp:
             conn.close()
 #-------------------------------------------------------------------------------
     def view_order_history(self):
-        #conn = get_db()
-        conn = mysql.connector.connect(host="127.0.0.1", user="root",password="sa123",database="ecommerce_db")
+      
+        conn=self.get_db()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
             SELECT o.id, o.total_amount, o.status, o.created_at,
@@ -308,7 +307,7 @@ class EcommerceApp:
 
 # ================================= ADMIN MODULE ==================================================
     def admin_add_product(self):
-        if self.current_user.get('role') != 'admin':   #check admin if admin is available then proceed
+        if self.current_user.get('role') != 'admin':  
             print("[!] Unauthorized access.")
             return
 
@@ -322,8 +321,7 @@ class EcommerceApp:
             print("[!] Invalid numerical values for price or stock.")
             return
 
-        #conn = get_db()
-        conn = mysql.connector.connect(host="127.0.0.1", user="root",password="sa123",database="ecommerce_db")
+        conn=self.get_db()
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO products (name, category, price, stock) VALUES (%s, %s, %s, %s)",
@@ -341,5 +339,5 @@ class EcommerceApp:
         print("[+] Logged out successfully.")
             
 #-------------------------------------------------------
-ecom=EcommerceApp()    # it is the object of class                         
+ecom=EcommerceApp()                         
 ecom.run()
